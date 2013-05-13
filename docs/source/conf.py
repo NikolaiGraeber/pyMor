@@ -11,6 +11,7 @@ if sphinx.__version__ < "1.0.1":
     raise RuntimeError("Sphinx 1.0.1 or newer required")
 
 needs_sphinx = '1.0'
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 # -----------------------------------------------------------------------------
 # General configuration
@@ -98,6 +99,9 @@ pygments_style = 'sphinx'
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
 html_style = 'pymor.css'
+if on_rtd:
+	#  http://read-the-docs.readthedocs.org/en/latest/faq.html#i-want-to-use-the-blue-default-sphinx-theme
+	html_theme = 'default'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".

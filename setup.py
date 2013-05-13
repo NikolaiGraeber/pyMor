@@ -23,6 +23,8 @@ install_requires = ['distribute', 'scipy', 'numpy', 'PyContracts',
 setup_requires = ['cython', 'numpy', 'nose', 'sympy']
 install_suggests = ['matplotlib', 'sympy'] + tests_require
 
+ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
+
 class DependencyMissing(Exception):
 
     def __init__(self, names):
@@ -124,7 +126,7 @@ def check_pre_require():
     distribute/distutil/numpy.distutils makes automatic installation too unreliable
     '''
     missing = list(_missing(['numpy', 'scipy']))
-    if len(missing):
+    if len(missing) and not ON_RTD:
         raise DependencyMissing(missing)
 
 

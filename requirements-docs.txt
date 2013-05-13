@@ -1,0 +1,17 @@
+sphinx
+nosehtmloutput
+nose-progressive
+cython
+distribute
+tissue
+numpydoc
+matplotlib
+nose-cov
+scipy
+nose
+sympy
+docopt
+numpy
+PyContracts
+mock
+dogpile.cache

@@ -18,8 +18,9 @@ from distutils.extension import Extension
 _orig_generate_a_pyrex_source = None
 
 tests_require = ['mock', 'nose-cov', 'nose', 'nosehtmloutput', 'nose-progressive', 'tissue']
+docs_requires = ['numpydoc', 'sphinx', 'sympy']
 install_requires = ['distribute', 'scipy', 'numpy', 'PyContracts',
-                    'docopt', 'dogpile.cache' , 'numpydoc']
+                    'docopt', 'dogpile.cache']
 setup_requires = ['cython', 'numpy', 'nose', 'sympy']
 install_suggests = ['matplotlib', 'sympy'] + tests_require
 
@@ -81,6 +82,12 @@ def _numpy_monkey():
 
     build_src.build_src.generate_a_pyrex_source = generate_a_pyrex_source
 
+def _write_req_file():
+    base = os.path.dirname(__file__)
+    for fn in ['requirements.txt', 'requirements-docs.txt']:
+        with open(os.path.join(base, fn), 'wb') as req:
+            req.writelines('\n'.join(set(install_requires + install_suggests + docs_requires + setup_requires)))
+    
 def write_version():
     revstring = subprocess.check_output(['git', 'describe', '--tags', '--candidates', '20', '--match', '*.*.*']).strip()
     filename = os.path.join(os.path.dirname(__file__), 'src', 'pymor', 'version.py')
@@ -133,6 +140,7 @@ def check_pre_require():
 def setup_package():
     check_pre_require()
     revstring = write_version()
+    _write_req_file()
 
     _setup(
         name='pyMor',

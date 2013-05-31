@@ -179,10 +179,32 @@ def numpy_gram_schmidt_basis_extension(basis, U, product=None):
 
     return NumpyVectorArray(new_basis)
 
+
 def pod_basis_extension(basis, U, count=1, copy_basis=True, product=None):
     '''Extend basis with the first `count` POD modes of the projection error of U
 
-    The basis is expected to be orthonormal w.r.t. `product`.
+    Parameters
+    ----------
+    basis
+        The basis to extend. The basis is expected to be orthonormal w.r.t. `product`.
+    U
+        The vectors to which the POD is applied
+    product
+        The scalar product w.r.t. which to orthonormalize; if None, the l2-scalar
+        product on the coefficient vector is used.
+    copy_basis
+        If copy_basis is False, the old basis is extended in-place.
+
+    Returns
+    -------
+    The new basis.
+
+    Raises
+    ------
+    ExtensionError
+        POD produces new vectors. Usually this is the case when U
+        is not linearily independent from the basis. However this can also happen
+        due to rounding errors ...
     '''
     if basis is None:
         return pod(U, modes=count, product=product)
@@ -202,7 +224,3 @@ def pod_basis_extension(basis, U, count=1, copy_basis=True, product=None):
         raise ExtensionError
 
     return new_basis
-
-
-
-

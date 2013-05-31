@@ -24,7 +24,8 @@ class InstationaryNonlinearDiscretization(DiscretizationInterface):
     def __init__(self, operator, rhs, initial_data, T, nt, visualizer=None, name=None):
         assert isinstance(operator, OperatorInterface)
         assert isinstance(rhs, LinearOperatorInterface)
-        assert isinstance(initial_data, (VectorArray, ConstantOperator))
+        assert isinstance(initial_data, (VectorArray, OperatorInterface))
+        assert not isinstance(initial_data, OperatorInterface) or initial_data.dim_source == 0
         if isinstance(initial_data, VectorArray):
             initial_data = ConstantOperator(initial_data, name='initial_data')
         assert operator.dim_source == operator.dim_range == rhs.dim_source == initial_data.dim_range
@@ -45,7 +46,7 @@ class InstationaryNonlinearDiscretization(DiscretizationInterface):
 
     def with_projected_operators(self, operators):
         assert set(operators.keys()) == {'operator', 'rhs', 'initial_data'}
-        return InstationaryNonlinearDiscretization(**operators)
+        return InstationaryNonlinearDiscretization(T=self.T, nt=self.nt, **operators)
 
     def _solve(self, mu=None):
         mu_A = self.map_parameter(mu, 'operator', provide={'_t': np.array(0)})

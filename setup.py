@@ -9,18 +9,20 @@ use_setuptools()
 
 import sys
 import os
-# not using this directly, but neeeds to be imported for nose not to fail
+# not using this directly, but needs to be imported for nose not to fail
 import multiprocessing
-import subprocess
+from subprocess import CalledProcessError, check_call
 from setuptools import find_packages
 from distutils.extension import Extension
+from setuptools.dist import Distribution
+from pkg_resources import working_set
 
 _orig_generate_a_pyrex_source = None
 
 tests_require = ['mock', 'nose-cov', 'nose', 'nosehtmloutput', 'nose-progressive', 'tissue']
-install_requires = ['distribute', 'scipy', 'numpy', 'PyContracts',
+install_requires = ['distribute', 'numpy', 'scipy', 'PyContracts',
                     'docopt', 'dogpile.cache' , 'numpydoc']
-setup_requires = ['cython', 'numpy', 'nose', 'sympy']
+setup_requires = ['cython', 'numpy', 'nose']
 install_suggests = ['matplotlib', 'sympy'] + tests_require
 
 class DependencyMissing(Exception):
@@ -28,7 +30,21 @@ class DependencyMissing(Exception):
     def __init__(self, names):
         super(DependencyMissing, self).__init__('Try: "for i in {} ; do pip install $i ; done"'.format(' '.join(names)))
 
-
+class PipDistribution(Distribution):
+    '''Overwrites the method responsible for installing missing eggs, substituting 
+    a library call to easy_install with a syscall to pip
+    '''
+    
+    def fetch_build_egg(self, req):
+        # ideally this would include any version specs for given rec too
+        cmd = ['pip', 'install', req.project_name]
+        try:
+            check_call(cmd)
+        except CalledProcessError:
+            return Distribution.fetch_build_egg(self, req)
+        working_set.require(req.project_name)
+        return working_set.find(req)
+        
 def _numpy_monkey():
     '''Apparently we need to monkey numpy's distutils to be able to build
     .pyx with Cython instead of Pyrex. The monkeying below is copied from
@@ -96,8 +112,13 @@ def write_version():
 
 def _setup(**kwargs):
     '''we'll make use of Distribution's __init__ downloading setup_requires packages right away here'''
-    from setuptools.dist import Distribution
-    dist = Distribution(kwargs)
+    dist = PipDistribution(kwargs)
+    
+    # apparently requires is either int(0) or a callable that returns list(Requirement)
+    reqs = dist.requires
+    if not isinstance(reqs, int):
+        for req in dist.requires():
+            working_set.resolve(req, installer=dist.fetch_build_egg)
 
     # now that we supposedly have at least numpy + cython installed, use them
     # they're dropped in cwd as egg-dirs however. let's discover those first
@@ -106,7 +127,7 @@ def _setup(**kwargs):
     require("numpy")
     _numpy_monkey()
     import Cython.Distutils
-    cmdclass = {'build_ext': Cython.Distutils.build_ext}
+    cmdclass = {}#{'build_ext': Cython.Distutils.build_ext}
     from numpy import get_include
     ext_modules = [Extension("pymor.tools.relations", ["src/pymor/tools/relations.pyx"], include_dirs=[get_include()]),
                    Extension("pymor.tools.inplace", ["src/pymor/tools/inplace.pyx"], include_dirs=[get_include()])]
@@ -138,7 +159,7 @@ def check_pre_require():
 
 
 def setup_package():
-    check_pre_require()
+#     check_pre_require()
     revstring = write_version()
 
     _setup(

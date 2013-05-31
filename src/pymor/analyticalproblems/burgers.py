@@ -12,11 +12,12 @@ from pymor.tools import Named
 from pymor.domaindescriptions import TorusDomain
 from pymor.functions import ConstantFunction, GenericFunction
 from pymor.analyticalproblems.advection import InstationaryAdvectionProblem
+from pymor.parameters.spaces import CubicParameterSpace
 
 
 class BurgersProblem(InstationaryAdvectionProblem):
 
-    def __init__(self, vx = 1., vy = 1.):
+    def __init__(self, vx = 1., vy = 1., parameter_range=(1., 2.)):
 
         def burgers_flux(U, mu):
             U_exp = np.sign(U) * np.power(np.abs(U), mu['exponent'])
@@ -26,6 +27,7 @@ class BurgersProblem(InstationaryAdvectionProblem):
             return R
         flux_function = GenericFunction(burgers_flux, dim_domain=0, dim_range=2,
                                         parameter_type={'exponent': 0}, name='burgers_flux')
+        flux_function.rename_parameter({'.exponent': 'exponent'})
 
         def initial_data(x):
             return 0.5 * (np.sin(2 * np.pi * x[..., 0]) * np.sin(2 * np.pi * x[..., 1]) + 1.)
@@ -39,3 +41,5 @@ class BurgersProblem(InstationaryAdvectionProblem):
                                              rhs=ConstantFunction(value=0, dim_domain=2),
                                              flux_function=flux_function,
                                              initial_data=initial_data, T=0.3, name='Burgers Problem')
+
+        self.parameter_space = CubicParameterSpace({'exponent': 0}, *parameter_range)

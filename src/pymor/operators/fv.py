@@ -10,8 +10,11 @@ from scipy.sparse import coo_matrix, csr_matrix, diags
 
 from pymor.la import NumpyVectorArray
 from pymor.grids.referenceelements import triangle, line
+from pymor.grids.subgrid import SubGrid
 from pymor.operators.interfaces import OperatorInterface, LinearOperatorInterface
 from pymor.operators.numpy import NumpyLinearOperator
+from pymor.operators.constructions import Concatenation
+from pymor.operators.basic import ComponentProjection
 from pymor.tools.inplace import iadd_masked, isub_masked
 
 
@@ -32,6 +35,16 @@ class NonlinearAdvectionLaxFriedrichs(OperatorInterface):
         self.build_parameter_type(inherits={'flux': flux})
         self.dim_source = self.dim_range = grid.size(0)
 
+    def restricted(self, components):
+        source_dofs = np.setdiff1d(np.union1d(self.grid.neighbours(0, 0)[components].ravel(), components),
+                                   np.array(-1, dtype=np.int32),
+                                   assume_unique=True)
+        sub_grid = SubGrid(self.grid, entities=source_dofs)
+        op = NonlinearAdvectionLaxFriedrichs(sub_grid, self.flux, self.lmbda,
+                                             '{}_restricted'.format(self.name))
+        sub_grid_indices = sub_grid.indices_from_parent_indices(components, codim=0)
+        proj = ComponentProjection(sub_grid_indices, op.dim_range, op.type_range)
+        return Concatenation(proj, op), sub_grid.parent_indices(0)
 
     def apply(self, U, ind=None, mu=None):
         assert isinstance(U, NumpyVectorArray)

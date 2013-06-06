@@ -25,6 +25,10 @@ class NumpyVectorArray(VectorArray, Communicable):
         va._len = 0
         return va
 
+    @classmethod
+    def zeros(cls, dim, count=1):
+        return cls(np.zeros((count, dim)))
+
     def __init__(self, object, dtype=None, copy=False, order=None, subok=False):
         if isinstance(object, np.ndarray) and not copy:
             self._array = object
@@ -190,6 +194,14 @@ class NumpyVectorArray(VectorArray, Communicable):
             return np.sum(np.power(A, p), axis=1)**(1/p)
         else:
             return np.sum(np.power(np.abs(A), p), axis=1)**(1/p)
+
+    def components(self, component_indices, ind=None):
+        A = self._array[:self._len] if ind is None else self._array[ind]
+        return A[:, component_indices]
+
+    def argmax_abs(self, ind=None):
+        A = self._array[:self._len] if ind is None else self._array[ind]
+        return np.argmax(np.abs(A), axis=1)
 
     def __str__(self):
         return self._array[:self._len].__str__()

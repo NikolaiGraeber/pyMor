@@ -72,6 +72,10 @@ class VectorArray(BasicInterface):
         '''
         pass
 
+    @classmethod
+    def zeros(cls, dim, count=1):
+        raise NotImplementedError
+
     @abstractmethod
     def __len__(self):
         '''The number of vectors in the array.'''
@@ -302,6 +306,12 @@ class VectorArray(BasicInterface):
         of `self[ind][i]`.
         '''
         pass
+
+    def components(self, component_indices, ind=None):
+        raise NotImplementedError
+
+    def argmax_abs(self, ind=None):
+        raise NotImplementedError
 
     def l2_norm(self, ind=None):
         '''Shorthand for `lp_norm(2, ind)`.'''

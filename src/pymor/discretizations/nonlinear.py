@@ -44,11 +44,15 @@ class InstationaryNonlinearDiscretization(DiscretizationInterface):
         self.solution_dim = operator.dim_range
         self.name = name
 
-    def with_projected_operators(self, operators):
+    def with_projected_operators(self, operators, name=None):
         assert set(operators.keys()) == {'operator', 'rhs', 'initial_data'}
-        return InstationaryNonlinearDiscretization(T=self.T, nt=self.nt, **operators)
+        return InstationaryNonlinearDiscretization(T=self.T, nt=self.nt, name=name, **operators)
+
+    with_operators = with_projected_operators
 
     def _solve(self, mu=None):
+        if not self.disable_logging:
+            self.logger.info('Solving {} for {} ...'.format(self.name, mu))
         mu_A = self.map_parameter(mu, 'operator', provide={'_t': np.array(0)})
         mu_F = self.map_parameter(mu, 'rhs', provide={'_t': np.array(0)})
         U0 = self.initial_data.apply(0, self.map_parameter(mu, 'initial_data'))

@@ -8,7 +8,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from pymor.algorithms.timestepping import explicit_euler
-from pymor.la.interfaces import VectorArray
+from pymor.la.interfaces import VectorArrayInterface
 from pymor.tools import dict_property
 from pymor.operators import OperatorInterface, LinearOperatorInterface, ConstantOperator
 from pymor.discretizations.interfaces import DiscretizationInterface
@@ -24,9 +24,9 @@ class InstationaryNonlinearDiscretization(DiscretizationInterface):
     def __init__(self, operator, rhs, initial_data, T, nt, visualizer=None, name=None):
         assert isinstance(operator, OperatorInterface)
         assert isinstance(rhs, LinearOperatorInterface)
-        assert isinstance(initial_data, (VectorArray, OperatorInterface))
+        assert isinstance(initial_data, (VectorArrayInterface, OperatorInterface))
         assert not isinstance(initial_data, OperatorInterface) or initial_data.dim_source == 0
-        if isinstance(initial_data, VectorArray):
+        if isinstance(initial_data, VectorArrayInterface):
             initial_data = ConstantOperator(initial_data, name='initial_data')
         assert operator.dim_source == operator.dim_range == rhs.dim_source == initial_data.dim_range
         assert rhs.dim_range == 1

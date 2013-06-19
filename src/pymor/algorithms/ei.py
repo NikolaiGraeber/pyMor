@@ -12,14 +12,14 @@ from scipy.linalg import solve_triangular
 
 from pymor.core import getLogger, BasicInterface
 from pymor.core.cache import Cachable, cached, DEFAULT_DISK_CONFIG
-from pymor.la import VectorArray
+from pymor.la import VectorArrayInterface
 from pymor.operators.ei import EmpiricalInterpolatedOperator
 
 
 def generate_interpolation_data(evaluations, error_norm=None, target_error=None, max_interpolation_dofs=None):
 
-    assert isinstance(evaluations, VectorArray) or all(isinstance(ev, VectorArray) for ev in evaluations)
-    if isinstance(evaluations, VectorArray):
+    assert isinstance(evaluations, VectorArrayInterface) or all(isinstance(ev, VectorArrayInterface) for ev in evaluations)
+    if isinstance(evaluations, VectorArrayInterface):
         evaluations = (evaluations,)
 
     logger = getLogger('pymor.algorithms.ei.generate_interpolation_data')

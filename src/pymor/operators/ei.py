@@ -8,7 +8,7 @@ import numpy as np
 from scipy.linalg import solve_triangular
 
 
-from pymor.la.interfaces import VectorArray
+from pymor.la.interfaces import VectorArrayInterface
 from pymor.la import NumpyVectorArray
 from pymor.operators.interfaces import OperatorInterface, LinearOperatorInterface
 from pymor.tools import float_cmp_all
@@ -18,7 +18,7 @@ class EmpiricalInterpolatedOperator(OperatorInterface):
 
     def __init__(self, operator, interpolation_dofs, collateral_basis, name=None):
         assert isinstance(operator, OperatorInterface)
-        assert isinstance(collateral_basis, VectorArray)
+        assert isinstance(collateral_basis, VectorArrayInterface)
         assert operator.dim_source == operator.dim_range == collateral_basis.dim
         assert operator.type_range == type(collateral_basis)
         assert hasattr(operator, 'restricted')

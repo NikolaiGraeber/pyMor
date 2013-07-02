@@ -23,14 +23,15 @@ class NonlinearAdvectionLaxFriedrichs(OperatorInterface):
 
     type_source = type_range = NumpyVectorArray
 
-    def __init__(self, grid, flux, lmbda=1.0, name=None):
+    def __init__(self, grid, flux, lmbda=1.0, name_map=None, name=None):
         super(NonlinearAdvectionLaxFriedrichs, self).__init__()
         self.grid = grid
         self.flux = flux
         self.lmbda = lmbda
         self.name = name
-        self.build_parameter_type(inherits={'flux': flux})
+        self.build_parameter_type(inherits={'flux': flux}, name_map=name_map)
         self.dim_source = self.dim_range = grid.size(0)
+        self.lock()
 
 
     def apply(self, U, ind=None, mu=None):
@@ -99,6 +100,7 @@ class L2Product(LinearOperatorInterface):
         self.dim_range = self.dim_source
         self.grid = grid
         self.name = name
+        self.lock()
 
     def _assemble(self, mu=None):
         assert mu is None
